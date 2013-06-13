@@ -1,0 +1,7 @@
+http://webchat.freenode.net/
+
+/msg NickServ register password email
+
+/msg NickServ identify password 
+
+irc.freenode.net 6667
