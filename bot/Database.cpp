@@ -28,19 +28,46 @@ void Database::insertIntoDB(string username,string msg) {
     }
 }
 
-void Database::showAllLoggin() {
+string Database::showAllLoggin() {
     int rec_count = 0;
     const char* errMSG;
     const char* tail;
     sqlite3_stmt *res;
 
-    this->error = sqlite3_prepare_v2(this->conn,"select name,date,msg from logging",1000, &res, &tail);
+    this->error = sqlite3_prepare_v2(this->conn,"SELECT username,date,msg FROM loggin ORDER BY date DESC LIMIT 10",1000, &res, &tail);
+    if(this->error) {
+        puts("hat wohl net geplappt mit dem auslesen...");
+    }
+    stringstream output;
     while (sqlite3_step(res) == SQLITE_ROW) {
-        printf("%s|", sqlite3_column_text(res, 0));
-        printf("%s|", sqlite3_column_text(res, 1));
-        printf("%s|", sqlite3_column_text(res, 2));
-        printf("%u\n", sqlite3_column_int(res, 3));
+        output << "Username: " << sqlite3_column_text(res, 0) << " Date: " << sqlite3_column_int(res, 1) << " MSG/Action: " << sqlite3_column_text(res, 2) << "\n";
+        //printf("%s|", sqlite3_column_text(res, 0));
+        //printf("%u|", sqlite3_column_int(res, 1));
+        //printf("%s|", sqlite3_column_text(res, 2));
 
         rec_count++;
     }
+    return output.str();
+}
+string Database::selectLastSeen(string name) {
+    int rec_count = 0;
+    const char* errMSG;
+    const char* tail;
+    sqlite3_stmt *res;
+    stringstream query;
+
+    query << "SELECT username,date,msg FROM loggin WHERE username='"<<name<<"' ORDER BY date DESC LIMIT 1";
+
+    this->error = sqlite3_prepare_v2(this->conn,query.str().c_str(),1000, &res, &tail);
+    if(this->error) {
+        puts("hat wohl net geplappt mit dem auslesen...");
+    }
+    stringstream output;
+    while (sqlite3_step(res) == SQLITE_ROW) {
+        output << "Username: " << sqlite3_column_text(res, 0) << " last seen on: " << sqlite3_column_int(res, 1);
+        return output.str();
+
+        rec_count++;
+    }
+    return string("Den user gibt es hier drinnen net :(");
 }

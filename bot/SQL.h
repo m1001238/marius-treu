@@ -2,7 +2,6 @@
 #include <string>
 #include <sqlite3.h>
 #include <ctime>
-
 #include <sstream>
 
 

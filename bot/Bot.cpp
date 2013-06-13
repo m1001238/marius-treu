@@ -24,85 +24,57 @@ int Bot::irc_parse(string buffer) {
 }
 
 int Bot::interpret_parse(string buffer) {
-    string sender = "";
-    string message = "";
+    Utilities::InterpretedBuffer data(buffer);
+    //if(data.sender=="") return 0;
+    int pos=0;
 
-    //if(this->enableLogging) this->logging(buffer);
-
-    //sender
-    size_t dd=0;
-    size_t ex=0;
-    size_t at=0;
-    dd = buffer.find_first_of(':');
-    ex = buffer.find_first_of('!');
-    at = buffer.find_first_of('@');
-
-    if(dd<ex && ex<at)
-        sender = buffer.substr( (int)dd+1 , (int)ex-(int)dd-1 );
-
-    size_t pos = 0;
-    //message
-    if ((pos = buffer.find("PRIVMSG")) != buffer.npos) {
-        string sstr = buffer.substr( (int)pos , buffer.length()-(int)pos );
-        if ((pos = sstr.find_first_of(':')) != sstr.npos) {
-            message = sstr.substr( (int)pos+1 , sstr.length()-(int)pos );
-        }
+    if(this->enableLogging) {
+        stringstream msg;
+        for(int i=0;i<(int)data.message.size();i++)
+            msg << data.message[i];
+        this->loggin(data.sender,msg.str());
     }
-    //logging
-    if(this->enableLogging)
-        this->loggin(sender,message);
-    //options
-    if ((pos = message.find(this->connect->getBotname()+":")) != buffer.npos) {
-        int len = this->connect->getBotname().length()+2;
-        return this->bot_functions(sender,message.substr( (int)pos+len , message.length()-((int)pos+len) ));
-    }
-    return 0;
-}
 
-int Bot::bot_functions(string sender, string message) {
-    //this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :"+buffer+"\r\n").c_str());
-    size_t pos = 0;
-    int len = 0;
-    if ((pos = message.find("-o")) != message.npos) {
-        return this->options();
+    if( (pos=data.atPosition("-o")) != -1 ) {
+        this->options();
     }
-    else if ((pos = message.find("-cn")) != message.npos) {
-        len = 4;
-        return this->changeName(message.substr( (int)pos+len , message.length()-((int)pos+len) ));
+    else if( (pos=data.atPosition("-cn")) != -1 && (int)data.message.size() > pos+1 ) {
+        this->changeName( data.message[pos+1] );
     }
-    else if ((pos = message.find("-log")) != message.npos) {
-        len = 5;
-        string option = message.substr( (int)pos+len , message.length()-((int)pos+len) );
-        if(option.find("on") != string::npos) {
+    else if( (pos=data.atPosition("-log")) != -1 && (int)data.message.size() > pos+1 ) {
+        if( data.message[pos+1] == "on" ) {
             this->enableLogging=true;
             this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :Loggin enabled\r\n").c_str());
         }
-        else if(option.find("off") != string::npos) {
+        else if( data.message[pos+1] == "off" ) {
             this->enableLogging=false;
             this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :Loggin disabled\r\n").c_str());
         }
-        return 0;
     }
-    else if ((pos = message.find("-showlog")) != message.npos) {
+    else if( (pos=data.atPosition("-showlog")) != -1 )
         this->showlog();
-    }
+    else if( (pos=data.atPosition("-last")) != -1 && data.message.size() > pos+1 )
+        this->lastSeen(data.message[pos+1]);
+    else if( (pos=data.atPosition("-shutdown")) != -1 )
+        return -1;
 
-    //printf("\n||||||%s|||||||||",buffer.c_str());
     return 0;
 }
 
-int Bot::options() {
+//Bot-functions
+
+void Bot::options() {
     this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :Du kannst folgendes tun:\r\n").c_str());
-    this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-cd name (ändert meinen namen)\r\n").c_str());
+    this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-cn name (ändert meinen namen)\r\n").c_str());
     this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-log on/off (schaltet logging ein/aus)\r\n").c_str());
-    this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-showlog (um die letzten 20 logs auszugeben)\r\n").c_str());
-    return 0;
+    this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-showlog (um die letzten 10 logs auszuzeigen - nach Zeit sortiert)\r\n").c_str());
+    this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-last name (um anzuzeigen wann der angegebene name zuletzt etwas getan hat)\r\n").c_str());
+    this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-shutodown (um den bot aus zu machen)\r\n").c_str());
 }
 
-int Bot::changeName(string name) {
+void Bot::changeName(string name) {
     this->connect->setBotname(name);
     this->connect->s2u(("NICK " + this->connect->getBotname() + "\r\n").c_str());
-    return 0;
 }
 
 void Bot::loggin(string sender, string message) {
@@ -111,5 +83,17 @@ void Bot::loggin(string sender, string message) {
 }
 
 void Bot::showlog() {
+    string output = this->db->showAllLoggin();
+    size_t pos = 0;
+    while( (pos = output.find_first_of('\n')) != string::npos ) {
+        string substr = output.substr(0,pos);
+        printf("%s\n",substr.c_str());
+        this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :"+substr.c_str()+"\r\n").c_str());
+        output = output.substr(pos+1,output.length());
+    }
+}
 
+void Bot::lastSeen(string name) {
+    string output = this->db->selectLastSeen(name);
+    this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :"+output.c_str()+"\r\n").c_str());
 }

@@ -2,6 +2,9 @@
 #include <string>
 #include "Connect.h"
 #include "Database.h"
+#include "Utilities.h"
+
+using namespace Utilities;
 
 class Bot {
     private:
@@ -15,8 +18,9 @@ class Bot {
         int interpret_parse(string buffer);
         int bot_functions(string sender, string message);
 
-        int options();
-        int changeName(string name);
+        void options();
+        void changeName(string name);
         void loggin(string sender,string message);
         void showlog();
+        void lastSeen(string name);
 };

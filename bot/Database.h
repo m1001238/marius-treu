@@ -14,5 +14,6 @@ class Database {
         Database();
         ~Database();
         void insertIntoDB(string username,string msg);
-        void showAllLoggin();
+        string showAllLoggin();
+        string selectLastSeen(string name);
 };
