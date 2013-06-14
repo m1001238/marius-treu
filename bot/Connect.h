@@ -23,37 +23,39 @@
 
 using namespace std;
 
-class Connect {
-    private:
-        //variables
-         #ifdef WIN32
-        SOCKET          sockfd;
-        #else
-        int             sockfd;
-        #endif
+namespace programm {
+    class Connect {
+        private:
+            //variables
+             #ifdef WIN32
+            SOCKET          sockfd;
+            #else
+            int             sockfd;
+            #endif
 
-        unsigned int    BUF_SIZE;
-        int             PORT;
-        char*           HOST;
+            unsigned int    BUF_SIZE;
+            int             PORT;
+            char*           HOST;
 
-        string          BOTNAME;
-        string          PASSWORD;
-        string          CHANNEL;
-        vector<string>  bot_witze;
+            string          BOTNAME;
+            string          PASSWORD;
+            string          CHANNEL;
+            vector<string>  bot_witze;
 
-        //methods
-        void            irc_connect();
-        void            irc_disconnect();
-        void            irc_identify();
-    public:
-        //variables
-        //methods
-        Connect(char *HOST,int PORT,char *CHANNEL);
-        ~Connect();
-        string          run();
-        void            ping_parse(const string &buffer);
-        void            s2u(const char *msg);
-        string          getBotname();
-        string          getChannel();
-        void            setBotname(string name);
-};
+            //methods
+            void            irc_connect();
+            void            irc_disconnect();
+            void            irc_identify();
+        public:
+            //variables
+            //methods
+            Connect(char *HOST,int PORT,char *CHANNEL);
+            ~Connect();
+            string          run();
+            void            ping_parse(const string &buffer);
+            void            s2u(const char *msg);
+            string          getBotname();
+            string          getChannel();
+            void            setBotname(string name);
+    };
+}

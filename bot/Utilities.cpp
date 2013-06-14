@@ -1,6 +1,17 @@
 #include "Utilities.h"
 
-namespace Utilities {
+namespace utilities {
+    string TimeTools::getTimeStr(int timestamp) {
+        time_t test;
+        struct tm * timeinfo;
+        test = timestamp;
+        timeinfo = localtime ( &test );
+        /// Zugriff auf einzelne Elemente
+        stringstream stream;
+        stream << "german time:" << timeinfo->tm_mday << "/" << timeinfo->tm_mon << "/" << 1900+timeinfo->tm_year << " h:" << timeinfo->tm_hour << " m:" << timeinfo->tm_min << " s:" << timeinfo->tm_sec;
+        return stream.str();
+    }
+
     InterpretedBuffer::InterpretedBuffer(string buffer) {
         this->sender="";
         /*
