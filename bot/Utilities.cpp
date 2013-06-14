@@ -1,6 +1,16 @@
 #include "Utilities.h"
 
 namespace utilities {
+    char CharExtend::makeSmall(char c) {
+        if( (int)c>=(int)'A' && (int)c<=(int)'Z' ) {
+            return (char)((int)c + 32);
+        }
+        else if( (int)c>=(int)'a' && (int)c<=(int)'z' ) {
+            return c;
+        }
+        return '\0';
+    }
+
     string TimeTools::getTimeStr(int timestamp) {
         time_t test;
         struct tm * timeinfo;

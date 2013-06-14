@@ -57,5 +57,6 @@ namespace programm {
             void leaveChannel(string chan);
             void changeTopic(string chan, string topic);
             void getCurTime();
+            void love(string du,string partner);
     };
 }

@@ -40,10 +40,6 @@ namespace programm {
         stringstream output;
         while (sqlite3_step(res) == SQLITE_ROW) {
             output << "Username: " << sqlite3_column_text(res, 0) << " Date: " << utilities::TimeTools::getTimeStr( sqlite3_column_int(res, 1) ) << " MSG/Action: " << sqlite3_column_text(res, 2) << "\n";
-            //printf("%s|", sqlite3_column_text(res, 0));
-            //printf("%u|", sqlite3_column_int(res, 1));
-            //printf("%s|", sqlite3_column_text(res, 2));
-
             rec_count++;
         }
         return output.str();

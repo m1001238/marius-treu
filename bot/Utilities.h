@@ -19,4 +19,8 @@ namespace utilities {
         public:
             static string getTimeStr(int timestamp);
     };
+    class CharExtend {
+        public:
+            static char makeSmall(char c);
+    };
 }

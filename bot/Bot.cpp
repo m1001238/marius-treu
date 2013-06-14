@@ -86,7 +86,7 @@ namespace programm {
         if(this->enableLogging) {
             stringstream msg;
             for(int i=0;i<(int)data.message.size();i++)
-                msg << data.message[i];
+                msg << data.message[i] << " ";
             this->loggin(data.sender,msg.str());
         }
 
@@ -122,6 +122,8 @@ namespace programm {
             this->leaveChannel( data.message[pos+1] );
         else if( (pos=data.atPosition("-curtime")) != -1 )
             this->getCurTime();
+        else if( (pos=data.atPosition("-love")) != -1 && (int)data.message.size() > pos+2 )
+            this->love( data.message[pos+1] , data.message[pos+2] );
 
         return 0;
     }
@@ -136,11 +138,12 @@ namespace programm {
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-log on/off (schaltet logging ein/aus)\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-showlog (um die letzten 10 logs auszuzeigen - nach Zeit sortiert)\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-last name (um anzuzeigen wann der angegebene name zuletzt etwas getan hat)\r\n").c_str());
-        this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-shutdown (um den bot aus zu machen)\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-join channel (um einen anderen channel zu joinen - ohne '#')\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-leave channel (um einen anderen channel zu leaven - ohne '#')\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-topic channel topic (um ein channel-topic umzubenennen - ohne '#')\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-curtime (um die momentane Zeit zu bekommen)\r\n").c_str());
+        this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-love (um zu prüfen ob du und dein Partner zusammen passen - cooles feature ;-) )\r\n").c_str());
+        this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-shutdown (um den bot auszumachen)\r\n").c_str());
     }
 
     void Bot::loggin(string sender, string message) {
@@ -152,7 +155,6 @@ namespace programm {
         size_t pos = 0;
         while( (pos = output.find_first_of('\n')) != string::npos ) {
             string substr = output.substr(0,pos);
-            printf("%s\n",substr.c_str());
             this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :"+substr.c_str()+"\r\n").c_str());
             output = output.substr(pos+1,output.length());
         }
@@ -177,5 +179,39 @@ namespace programm {
     }
     void Bot::getCurTime() {
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :Es ist: "+ utilities::TimeTools::getTimeStr( time(0) ) +"\r\n").c_str());
+    }
+    void Bot::love(string du,string partner) {
+        float word1=0.0f;
+        float word2=0.0f;
+        int wordCount1=0;
+        int wordCount2=0;
+
+        for(int i=0;i<du.length();i++) {
+            char c = utilities::CharExtend::makeSmall( du.at(i) );
+            if(c!='\0') {
+                word1 += (float)( (int)c-97 ) / (float)26;
+                wordCount1++;
+            }
+        }
+        for(int i=0;i<partner.length();i++) {
+            char c = utilities::CharExtend::makeSmall( partner.at(i) );
+            if(c!='\0') {
+                word2 += (float)( (int)c-97 ) / (float)26;
+                wordCount2++;
+            }
+        }
+        float p1 = ( word1/wordCount1 );
+        float p2 = ( word2/wordCount2 );
+        float percent = 0.0f;
+
+        if(p1>p2)
+            percent = p1-p2;
+        else if(p2>p1)
+            percent = p2-p1;
+
+        stringstream sstr;
+        sstr << (int)( (1.0f-percent)*100.0f );
+
+        this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :Du und dein Partner passen zu "+ sstr.str().c_str() +"% zusammen!!!\r\n").c_str());
     }
 }
