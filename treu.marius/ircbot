@@ -1,0 +1,41 @@
+.TH  "" "" 
+.SS IRC-BOT
+.PP
+Bot - IRC Bot, der eine Verbindung mit einem IRC-server aufbaut
+.SS SYNOPSIS
+.PP
+\&./main server port channel
+.SS DESCRIPTION
+.IP \[bu] 2
+Dieser Bot starten eine Verbindung zwischen Client und Server.
+.IP \[bu] 2
+server, port und channel werden zum Start übergeben.
+.IP \[bu] 2
+Mit nick und channel wird identifiziert.
+.PP
+Der Bot arbeitet mit folgenden Meldungen:
+.SS OPTIONS
+.IP \[bu] 2
+-o - um anzuzeigen welche features möglich sind
+.IP \[bu] 2
+-cn name - um den Namen des Bots zu ändern
+.IP \[bu] 2
+-log on/off - um das Logging ein-/auszuschalten
+.IP \[bu] 2
+-last name - um zu sehen wann welcher Nutzer zuletzt etwas getan hat
+.IP \[bu] 2
+-join channel - um den Bot einen channel beitreten zu lassen
+.IP \[bu] 2
+-leave channel - um den Bot einen channel verlassen zu lassen
+.IP \[bu] 2
+-topic channel text - um das Topic in einem channel zu ändern
+.IP \[bu] 2
+-curtime - um die momentane Zeit anzuzeigen
+.IP \[bu] 2
+-love name1 name2 - teste ob du und dein Schwarm zusammen passen -
+cooles Feature ;-)
+.IP \[bu] 2
+-shutdown - um den Bot herunterfahren zu lassen
+.SS AUTHOR
+.PP
+Marius Treu m1001238.fh-heidelberg.de
