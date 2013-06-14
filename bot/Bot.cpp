@@ -142,7 +142,7 @@ namespace programm {
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-leave channel (um einen anderen channel zu leaven - ohne '#')\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-topic channel topic (um ein channel-topic umzubenennen - ohne '#')\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-curtime (um die momentane Zeit zu bekommen)\r\n").c_str());
-        this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-love (um zu prüfen ob du und dein Partner zusammen passen - cooles feature ;-) )\r\n").c_str());
+        this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-love deinName partnerName (um zu prüfen ob du und dein Partner zusammen passen - cooles feature ;-) )\r\n").c_str());
         this->connect->s2u(("PRIVMSG #" + this->connect->getChannel() + " :-shutdown (um den bot auszumachen)\r\n").c_str());
     }
 
