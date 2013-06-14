@@ -2,6 +2,8 @@
 
 namespace programm {
     Connect::Connect(char *HOST,int PORT,char *CHANNEL) {
+        printf("%s->%i->%s\n",string(HOST).c_str(),PORT,string(CHANNEL).c_str());
+
         this->HOST = HOST;
         this->PORT = PORT;
         this->BUF_SIZE = 1024;

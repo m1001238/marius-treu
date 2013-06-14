@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace programm {
-    class ConfigData {
+    /*class ConfigData {
         public:
             char HOST[100];
             int PORT;
@@ -31,12 +31,11 @@ namespace programm {
             Config(char* HOST,int PORT,char* CHANNEL);
             ~Config();
             void setConfigFile(char* HOST,int PORT,char* CHANNEL);
-    };
+    };*/
 
     class Bot {
         private:
             bool enableLogging;
-            Config* config;
             Connect* connect;
             Database* db;
         public:
@@ -44,6 +43,8 @@ namespace programm {
             Bot(char *HOST,int PORT,char *CHANNEL);
             ~Bot();
             void run();
+            void setConfigFile();
+            void setConfigFile(char* HOST, int PORT, char* CHANNEL);
             int irc_parse(string buffer);
             int interpret_parse(string buffer);
             int bot_functions(string sender, string message);

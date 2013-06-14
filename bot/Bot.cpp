@@ -1,77 +1,98 @@
 #include "Bot.h"
 
 namespace programm {
-    Config::Config() {
-        char HOST[] = "";
-        int PORT = 0;
-        char CHANNEL[] = "";
-        this->setConfigFile(HOST,PORT,CHANNEL);
-    }
-    Config::Config(char* HOST,int PORT,char* CHANNEL) {
-        this->setConfigFile(HOST,PORT,CHANNEL);
-    }
-    Config::~Config() {
-        delete this->configData;
-    }
-    void Config::setConfigFile(char* HOST,int PORT,char* CHANNEL) {
-        const char* FILENAME = "config.cfg";
-        ofstream outfile;
-        ifstream infile;
-
-        //Load config
-        this->configData = new ConfigData();
-        infile.open(FILENAME);
-        infile.read((char*)this->configData, sizeof(ConfigData));
-        infile.close();
-
-        cout << this->configData->HOST << " -> " << this->configData->PORT << " -> " << this->configData->CHANNEL << "\n" << endl;
-
-        if(this->configData->PORT==0 && PORT==0) {
-            strcpy(this->configData->HOST , "irc.freenode.net");
-            this->configData->PORT = 6667;
-            strcpy(this->configData->CHANNEL , "NekkidxD");
-        }
-        else if(PORT!=0) {
-            strcpy(this->configData->HOST , HOST);
-            this->configData->PORT = PORT;
-            strcpy(this->configData->CHANNEL , CHANNEL);
-        }
-
-        //Save config
-        outfile.open(FILENAME, ofstream::trunc);
-        outfile.write((char*)this->configData, sizeof(ConfigData));
-        outfile.close();
-
-        cout << this->configData->HOST << " -> " << this->configData->PORT << " -> " << this->configData->CHANNEL << "\n" << endl;
-    }
-
     Bot::Bot() {
-        this->config = new Config();
+        this->setConfigFile();
         this->run();
     }
     Bot::Bot(char *HOST,int PORT,char *CHANNEL) {
-        this->config = new Config(HOST,PORT,CHANNEL);
+        this->setConfigFile(HOST, PORT, CHANNEL);
         this->run();
+    }
+    Bot::~Bot() {
+        delete this->connect;
+        delete this->db;
     }
     void Bot::run() {
         this->enableLogging=false;
         this->db = new Database();
 
-        this->connect = new Connect(this->config->configData->HOST,this->config->configData->PORT,this->config->configData->CHANNEL);
-
         while(true) {
             if (this->irc_parse(this->connect->run()) == -1)
                 break;
         }
-
-        delete this->connect;
     }
-    Bot::~Bot() {
-        delete this->connect;
-        delete this->config;
-        delete this->db;
-    }
+    void Bot::setConfigFile() {
+        const char* FILENAME = "config.cfg";
+        char HOST[100] = "";
+        int PORT = 0;
+        char CHANNEL[100] = "";
 
+
+
+        FILE* file = fopen(FILENAME, "r");
+        if (file == NULL)
+            return;
+        // get file length
+        fseek(file, 0, SEEK_END);
+        unsigned long length = ftell(file);
+        rewind(file);
+        // allocate memorys
+        char* buffer = (char*) malloc (sizeof(char)*length);
+        if (buffer == NULL) {
+            fclose(file);
+            return;
+        }
+        // load file into memory
+        unsigned long result = fread(buffer, 1, length, file);
+        string configFile = string(buffer, 0, result);
+        fclose(file);
+        free(buffer);
+
+        // Falls Config nicht vorhanden, erstelle Config:
+        if (configFile.find("host") == string::npos ||
+            configFile.find("port") == string::npos ||
+            configFile.find("channel") == string::npos) {
+            stringstream sstr;
+            sstr << "host:irc.freenode.net\nport:6667\nchannel:NekkidxD\n";
+            file = fopen(FILENAME, "w");
+            if (file == NULL)
+                return;
+            fputs(sstr.str().c_str(), file);
+            fclose(file);
+            strcpy(HOST, "irc.freenode.net");
+            PORT = 6667;
+            strcpy(CHANNEL, "NekkidxD");
+
+        } else {
+            size_t pos1 = configFile.find("host:")+5;
+            size_t pos2 = configFile.find("\n")+1;
+            string sHost = configFile.substr(pos1, pos2-pos1-1);
+            pos1 = configFile.find("port:")+5;
+            pos2 = configFile.find("\n", pos1);
+            int sPort = atoi(configFile.substr(pos1, pos2-pos1).c_str());
+            pos1 = configFile.find("channel:")+8;
+            pos2 = configFile.find("\n", pos1);
+            string sChannel = configFile.substr(pos1, pos2-pos1);
+            strcpy(HOST, sHost.c_str());
+            PORT = sPort;
+            strcpy(CHANNEL, sChannel.c_str());
+        }
+        this->connect = new Connect(HOST,PORT,CHANNEL);
+    }
+    void Bot::setConfigFile(char* HOST, int PORT, char* CHANNEL) {
+        const char* FILENAME = "config.cfg";
+        FILE *file = fopen(FILENAME, "w");
+        if (file == NULL)
+            return;
+        stringstream sstr;
+        if (PORT != 0) {
+            sstr << "host:" << HOST << "\n" << "port:" << PORT << "\n" << "channel:" << CHANNEL << "\n";
+            fputs(sstr.str().c_str(), file);
+            fclose(file);
+        }
+        this->connect = new Connect(HOST,PORT,CHANNEL);
+    }
     int Bot::irc_parse(string buffer) {
         if (buffer.find("\r\n") == buffer.length()-2) buffer.erase(buffer.length()-2);
         this->connect->ping_parse(buffer);
